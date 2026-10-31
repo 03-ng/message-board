@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>留言板</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#f4f7fa;padding:30px;max-width:600px;margin:0 auto}
+.box{background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 12px #00000012}
+.item{margin-bottom:16px}
+label{display:block;margin-bottom:6px;color:#333}
+input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+textarea{resize:vertical;min-height:80px}
+button{width:100%;padding:12px;background:#3671e9;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer}
+.tip{margin-top:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="item">
+    <label>称呼</label>
+    <input id="name" placeholder="怎么称呼你">
+  </div>
+  <div class="item">
+    <label>身份</label>
+    <input id="role" placeholder="例如：访客">
+  </div>
+  <div class="item">
+    <label>心情</label>
+    <input id="mood" placeholder="今天的心情">
+  </div>
+  <div class="item">
+    <label>留言内容</label>
+    <textarea id="msg" placeholder="写下留言"></textarea>
+  </div>
+  <div class="item">
+    <label>寄语</label>
+    <input id="wish" placeholder="一句祝福或者期待">
+  </div>
+  <button onclick="submitData()">提交留言</button>
+  <div class="tip" id="tip"></div>
+</div>
+
+<script>
+const proxyApi = "/.netlify/functions/vika-proxy";
+const datasheetId = "dstBwdHJuockUhN6Hi";
+const token = "uskEffOQ5DqNAGNyXJbKqs1";
+
+async function submitData(){
+  const tip = document.getElementById("tip");
+  tip.innerText = "提交中...";
+  const payload = {
+    datasheetId,
+    token,
+    fields:{
+      "称呼":document.getElementById("name").value,
+      "身份":document.getElementById("role").value,
+      "心情":document.getElementById("mood").value,
+      "留言内容":document.getElementById("msg").value,
+      "寄语":document.getElementById("wish").value
+    }
+  };
+  try{
+    const res = await fetch(proxyApi,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const ret = await res.json();
+    if(ret.code === 200){
+      tip.innerText = "✅ 提交成功！";
+      //清空表单
+      document.getElementById("name").value = "";
+      document.getElementById("role").value = "";
+      document.getElementById("mood").value = "";
+      document.getElementById("msg").value = "";
+      document.getElementById("wish").value = "";
+    }else{
+      tip.innerText = "❌ 失败："+ret.msg;
+    }
+  }catch(e){
+    tip.innerText = "❌ 网络出错";
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
